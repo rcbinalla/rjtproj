@@ -13,7 +13,7 @@ class InvoiceService
         $this->mailer = $mailer;
     }
 
-    // Will be use xero as well
+    // Will be use for xero as well
     public function getInvoiceData($referralId, $referralType, $completionDate, $closureDate)
     {
 		$this->referralType = $referralType;
@@ -38,17 +38,10 @@ class InvoiceService
     // Private functions
     private function getInvoiceConferences($referralId, $completionDate)
     {
-        $data = $this->ci->conference->where("conference_date >= '{$completionDate}'")
-            ->where("conference_type != 'Pre'")
-            ->order_by('fac_id')
-            ->find(['document_id' => $referralId]);
-
-        $preConferences = $this->ci->conference->where("conference_date >= '{$completionDate}'")
-            ->where("conference_type = 'Pre'")
-            ->order_by('fac_id')
-            ->find(['document_id' => $referralId]);
-
-        return array_merge($data, $preConferences);
+        return $this->ci->conference
+			->where(['document_id' => $referralId, "conference_date" => " >= {$completionDate}"])
+            ->order_by('fac_id, conference_type DESC')
+            ->find();
     }
 
 	private function getAddOnItems($referralId) {
@@ -141,7 +134,7 @@ class InvoiceService
 			$isLead = $conference->lead_id == $facilitator->id;
 			$feeCode = $this->buildFeeCode($conference, $conferenceCounter, $isLead);
 
-			// Add conference data directly
+			// TODO: Convert to function
 			$data[] = [
 				'conference_id' => $conference->id,
 				'description' => $conference->conference_type,
@@ -151,7 +144,7 @@ class InvoiceService
 				'gl_code' => $feeType[$feeCode]->gl_code
 			];
 
-			// Add additional data if conditions are mets
+			// TODO: Convert to function
 			$travelTime = $travels[$facilitator->id][$conference->id]->travel_time;
             $travelDistance = $travels[$facilitator->id][$conference->id]->travel_distance;
 
@@ -177,7 +170,7 @@ class InvoiceService
 				];
 			}
 
-			// Add more data if conditions are met
+			// TODO: Convert to function
 			if ($travelTime >= 1) {
 				$data[] = [
 					'conference_id' => $conference->id,
